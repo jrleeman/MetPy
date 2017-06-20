@@ -274,9 +274,18 @@ def el(pressure, temperature, dewpt):
         return x[-1], y[-1]
 
 
+class parcelPathAssumptions(object):
+    """
+    Holds assumptions made about the parcel path during calculations.
+    """
+    __slots__ = ('use_virtual_temperature', 'moist_adiabat')
+    def __init__(self):
+        self.use_virtual_temperature = True
+        self.moist_adiabat = 'pseudoadiabatic'
+
 @exporter.export
 @check_units('[pressure]', '[temperature]', '[temperature]')
-def parcel_profile(pressure, temperature, dewpt):
+def parcel_profile(pressure, temperature, dewpt, assumptions=parcelPathAssumptions()):
     r"""Calculate the profile a parcel takes through the atmosphere.
 
     The parcel starts at `temperature`, and `dewpt`, lifted up
@@ -316,7 +325,15 @@ def parcel_profile(pressure, temperature, dewpt):
     press_upper = concatenate((l, pressure[pressure < l]))
     t2 = moist_lapse(press_upper, t1[-1]).to(t1.units)
 
-    # Return LCL *without* the LCL point
+    # Do virtual temperature correction
+    if assumptions.use_virtual_temperature:
+        Rv = mpcalc.mixing_ratio(mpcalc.saturation_vapor_pressure(dewpt), pressure)
+        t1 = mpcalc.virtual_temperature(t1, Rv)
+
+        Rv = mpcalc.mixing_ratio(mpcalc.saturation_vapor_pressure(temperature), pressure)
+        t2 =  mpcalc.virtual_temperature(t2, Rv)
+
+        # Return LCL *without* the LCL point
     return concatenate((t1[:-1], t2[1:]))
 
 
