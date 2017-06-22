@@ -277,11 +277,16 @@ def el(pressure, temperature, dewpt):
 class parcelPathAssumptions(object):
     """
     Holds assumptions made about the parcel path during calculations.
+
+    Determines which assumptions are made when calculating a parcel path. Defaults calculate
+    a surface based parcel path using the virtual temperature correction and psuedoadiabats.
     """
-    __slots__ = ('use_virtual_temperature', 'moist_adiabat')
+    __slots__ = ('use_virtual_temperature', 'moist_adiabat', 'path_type')
     def __init__(self):
         self.use_virtual_temperature = True
         self.moist_adiabat = 'pseudoadiabatic'
+        self.path_type = 'surface'
+
 
 @exporter.export
 @check_units('[pressure]', '[temperature]', '[temperature]')
