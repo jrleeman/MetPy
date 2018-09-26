@@ -7,11 +7,11 @@ import numpy as np
 import pytest
 
 from metpy.calc import (add_height_to_pressure, add_pressure_to_height, apparent_temperature,
-                        coriolis_parameter, geopotential_to_height, get_wind_components,
-                        get_wind_dir, get_wind_speed, heat_index, height_to_geopotential,
-                        height_to_pressure_std, pressure_to_height_std, sigma_to_pressure,
-                        smooth_gaussian, wind_components, wind_direction, wind_speed,
-                        windchill)
+                        convert_wind_directions, coriolis_parameter, geopotential_to_height,
+                        get_wind_components, get_wind_dir, get_wind_speed, heat_index,
+                        height_to_geopotential, height_to_pressure_std, pressure_to_height_std,
+                        sigma_to_pressure, smooth_gaussian, wind_components, wind_direction,
+                        wind_speed, windchill)
 from metpy.deprecation import MetpyDeprecationWarning
 from metpy.testing import assert_almost_equal, assert_array_almost_equal, assert_array_equal
 from metpy.units import units
@@ -499,3 +499,8 @@ def test_smooth_gaussian_3d_units():
               [3.00708990, 4.01417981, 7.01417981, 12.0141798, 18.9503707],
               [4.00000000, 5.00708990, 8.00708990, 13.0070899, 19.9432808]]) * units('m')
     assert_array_almost_equal(s[1, :, :], s_true)
+
+
+def test_wind_direction_to_degrees:
+    wind_direction_degrees = np.linspace(0, 360, 60)
+    truth = np.array([10, 10]) * units.degrees
