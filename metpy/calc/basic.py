@@ -736,3 +736,94 @@ def _check_radians(value, max_radians=2 * np.pi):
         warnings.warn('Input over {} radians. '
                       'Ensure proper units are given.'.format(max_radians))
     return value
+
+
+@exporter.export
+@preprocess_xarray
+def convert_wind_directions(directions, output_type='short', number_directions=16):
+    """Input validation of values that could be in degrees instead of radians.
+
+    Parameters
+    ----------
+    value : `pint.Quantity`
+        The input value to check.
+
+    max_radians : float
+        Maximum absolute value of radians before warning.
+
+    Returns
+    -------
+    `pint.Quantity`
+        The input value
+
+    """
+    wind_direction_degrees = np.linspace(0, 360, 17)
+    wind_direction_degrees = np.append(wind_direction_degrees, (999))
+    wind_direction_degrees = wind_direction_degrees * units.degrees
+
+    wind_direction_long_names = ['NORTH', 'NORTH-NORTH-EAST', 'NORTH-EAST', 'EAST-NORTH-EAST',
+                                 'EAST', 'EAST-SOUTH-EAST', 'SOUTH-EAST', 'SOUTH-SOUTH-EAST',
+                                 'SOUTH', 'SOUTH-SOUTH-WEST', 'SOUTH-WEST', 'WEST-SOUTH-WEST',
+                                 'WEST', 'WEST-NORTH-WEST', 'NORTH-WEST', 'NORTH-NORTH-WEST',
+                                 'NORTH', 'UNDEFINED']
+
+    wind_direction_short_names = ['N', 'NNE', 'NE', 'ENE',
+                                  'E', 'ESE', 'SE', 'SSE',
+                                  'S', 'SSW', 'SW', 'WSW',
+                                  'W', 'WNW', 'NW', 'NNW',
+                                  'N', 'U']
+
+    # Decimate the directions as desired:
+    direction_decimation_factor = {16: 1,
+                                   8: 2,
+                                   4: 4}
+    try:
+        decimate_factor = direction_decimation_factor[number_directions]
+    except KeyError:
+        raise ValueError('number_directions must be 16, 8, or 4.')
+
+    wind_direction_degrees = wind_direction_degrees[::decimate_factor]
+    wind_direction_long_names = wind_direction_long_names[::decimate_factor]
+    wind_direction_short_names = wind_direction_short_names[::decimate_factor]
+
+    # Convert all of the items in the input to the nearest degree value
+    nearest_direction_degrees = []
+
+    for item in directions:
+        # If the item is a string, we need to convert it to the nearest direction
+        if isinstance(item, str):
+            item = item.upper()
+            # Compare to short and long names
+            conversion_dictionary = dict(
+                zip(wind_direction_long_names, wind_direction_degrees))
+            conversion_dictionary.update(
+                dict(zip(wind_direction_short_names, wind_direction_degrees)))
+            if item in conversion_dictionary.keys():
+                nearest_direction_degrees.append(conversion_dictionary[item])
+            else:
+                nearest_direction_degrees.append(999 * units.degrees)
+
+        else:  # try to deal with this as a direction
+            nearest_direction_degrees.append(
+                wind_direction_degrees[(np.abs(wind_direction_degrees - item)).argmin()])
+
+    # Convert the degree values to the desired output format
+    format_dictionaries = {'short': wind_direction_short_names,
+                           'long': wind_direction_long_names,
+                           'degrees': wind_direction_degrees}
+    try:
+        to_list = format_dictionaries[output_type]
+    except KeyError:
+        raise ValueError('output_type must be "short", "long", or "degrees"')
+
+    conversion_dictionary = dict(zip(wind_direction_degrees.m, to_list))
+
+    res = [conversion_dictionary[x.m] if x != 999 * units.degrees else to_list[-1] for x in
+           nearest_direction_degrees]
+
+    # If the output is degrees, replace all 999 with NaN
+    if output_type == 'degrees':
+        res = [x if x != 999 * units.degrees else np.nan * units.degrees for x in res]
+
+    return res
+
