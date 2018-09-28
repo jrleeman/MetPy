@@ -501,6 +501,89 @@ def test_smooth_gaussian_3d_units():
     assert_array_almost_equal(s[1, :, :], s_true)
 
 
-def test_wind_direction_to_degrees:
-    wind_direction_degrees = np.linspace(0, 360, 60)
-    truth = np.array([10, 10]) * units.degrees
+def test_wind_direction_to_degrees_16():
+    """Test conversion of degrees to degrees."""
+    wind_direction_degrees = np.linspace(0, 360, 60) * units.degrees
+    truth = np.array([0, 0, 22.5, 22.5, 22.5, 22.5, 45, 45, 45,
+                      45, 67.5, 67.5, 67.5, 90, 90, 90, 90, 112.5,
+                      112.5, 112.5, 112.5, 135, 135, 135, 157.5, 157.5, 157.5,
+                      157.5, 180, 180, 180, 180, 202.5, 202.5, 202.5, 202.5,
+                      225, 225, 225, 247.5, 247.5, 247.5, 247.5, 270, 270,
+                      270, 270, 292.5, 292.5, 292.5, 315, 315, 315, 315,
+                      337.5, 337.5, 337.5, 337.5, 360, 360]) * units.degrees
+    res = convert_wind_directions(wind_direction_degrees, output_type='degrees',
+                                  number_directions=16)
+    res = np.degrees(np.array(res)) * units.degrees
+    assert_array_almost_equal(res, truth, 4)
+
+
+def test_wind_direction_to_degrees_8():
+    """Test conversion of degrees to degrees."""
+    wind_direction_degrees = np.linspace(0, 360, 60) * units.degrees
+    truth = np.array([0, 0, 0, 0, 45, 45, 45, 45, 45, 45, 45,
+                      45, 90, 90, 90, 90, 90, 90, 90, 135, 135, 135,
+                      135, 135, 135, 135, 180, 180, 180, 180, 180, 180, 180,
+                      180, 225, 225, 225, 225, 225, 225, 225, 270, 270, 270,
+                      270, 270, 270, 270, 315, 315, 315, 315, 315, 315, 315,
+                      315, 360, 360, 360, 360]) * units.degrees
+    res = convert_wind_directions(wind_direction_degrees, output_type='degrees',
+                                  number_directions=8)
+    res = np.degrees(np.array(res)) * units.degrees
+    assert_array_almost_equal(res, truth, 4)
+
+
+def test_wind_direction_to_degrees_4():
+    """Test conversion of degrees to degrees."""
+    wind_direction_degrees = np.linspace(0, 360, 60) * units.degrees
+    truth = np.array([0., 0., 0., 0., 0., 0., 0., 0., 90., 90., 90.,
+                      90., 90., 90., 90., 90., 90., 90., 90., 90., 90., 90.,
+                      90., 180., 180., 180., 180., 180., 180., 180., 180., 180., 180.,
+                      180., 180., 180., 180., 270., 270., 270., 270., 270., 270., 270.,
+                      270., 270., 270., 270., 270., 270., 270., 270., 360., 360., 360.,
+                      360., 360., 360., 360., 360.]) * units.degrees
+    res = convert_wind_directions(wind_direction_degrees, output_type='degrees',
+                                  number_directions=4)
+    res = np.degrees(np.array(res)) * units.degrees
+    assert_array_almost_equal(res, truth, 4)
+
+
+def test_wind_strings_to_long_16():
+    """Test conversion of strings to long names."""
+    dirs = ['North', 'NNE', 'NORTH-EAST', 'EAST-NORTH-EAST', 'east',
+            'ESE', 'se', 'sse', 'soUtH', 'SOUTH-SOUTH-WEST', 'SW', 'wsw',
+            'west', 'WEST-NORTH-WEST', 'NW', 'NnW']
+    truth = ['NORTH', 'NORTH-NORTH-EAST', 'NORTH-EAST', 'EAST-NORTH-EAST', 'EAST',
+             'EAST-SOUTH-EAST', 'SOUTH-EAST', 'SOUTH-SOUTH-EAST', 'SOUTH',
+             'SOUTH-SOUTH-WEST', 'SOUTH-WEST', 'WEST-SOUTH-WEST', 'WEST',
+             'WEST-NORTH-WEST', 'NORTH-WEST', 'NORTH-NORTH-WEST']
+    res = convert_wind_directions(dirs, output_type='long',
+                                  number_directions=16)
+    assert_array_equal(res, truth)
+
+
+def test_wind_strings_to_long_8():
+    """Test conversion of strings to long names."""
+    dirs = ['North', 'NNE', 'NORTH-EAST', 'EAST-NORTH-EAST', 'east',
+            'ESE', 'se', 'sse', 'soUtH', 'SOUTH-SOUTH-WEST', 'SW', 'wsw',
+            'west', 'WEST-NORTH-WEST', 'NW', 'NnW']
+    truth = ['NORTH', 'NORTH-NORTH-EAST', 'NORTH-EAST', 'EAST-NORTH-EAST', 'EAST',
+             'EAST-SOUTH-EAST', 'SOUTH-EAST', 'SOUTH-SOUTH-EAST', 'SOUTH',
+             'SOUTH-SOUTH-WEST', 'SOUTH-WEST', 'WEST-SOUTH-WEST', 'WEST',
+             'WEST-NORTH-WEST', 'NORTH-WEST', 'NORTH-NORTH-WEST']
+    res = convert_wind_directions(dirs, output_type='long',
+                                  number_directions=8)
+    assert_array_equal(res, truth)
+
+
+def test_wind_strings_to_long_16():
+    """Test conversion of strings to long names."""
+    dirs = ['North', 'NNE', 'NORTH-EAST', 'EAST-NORTH-EAST', 'east',
+            'ESE', 'se', 'sse', 'soUtH', 'SOUTH-SOUTH-WEST', 'SW', 'wsw',
+            'west', 'WEST-NORTH-WEST', 'NW', 'NnW']
+    truth = ['NORTH', 'NORTH-NORTH-EAST', 'NORTH-EAST', 'EAST-NORTH-EAST', 'EAST',
+             'EAST-SOUTH-EAST', 'SOUTH-EAST', 'SOUTH-SOUTH-EAST', 'SOUTH',
+             'SOUTH-SOUTH-WEST', 'SOUTH-WEST', 'WEST-SOUTH-WEST', 'WEST',
+             'WEST-NORTH-WEST', 'NORTH-WEST', 'NORTH-NORTH-WEST']
+    res = convert_wind_directions(dirs, output_type='long',
+                                  number_directions=16)
+    assert_array_equal(res, truth)
